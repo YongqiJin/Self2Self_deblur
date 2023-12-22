@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import network.Punet
 import skimage.metrics
 from argparse import ArgumentParser
+from tqdm import tqdm
 
 import util
 import cv2
@@ -63,30 +64,33 @@ def train(file_path, args, is_realnoisy=False):
     
     # begin training
     avg_loss = 0
-    for step in range(args.iteration):
+    for step in tqdm(range(args.iteration)):
         # one step
+        model.train()
         loss = get_loss(noisy, model, drop_rate=args.drop_rate, bs=args.bs, device=args.device)
         avg_loss += loss.item()
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        with torch.cuda.device(args.device):
-            torch.cuda.empty_cache()
+        # clear cache
+        # with torch.cuda.device(args.device):
+        #     torch.cuda.empty_cache()
         
         # test
         if (step+1) % args.test_frequency == 0:
-            # model.eval()
+            model.eval()
             print("After %d training step(s)" % (step + 1),
                   "loss  is {:.9f}".format(avg_loss / args.test_frequency))
             final_image = np.zeros(gt.shape)
-            for j in range(args.num_prediction):
+            for j in tqdm(range(args.num_prediction)):
                 output_numpy = get_output(noisy, model, drop_rate=args.drop_rate, bs=args.bs, device=args.device)
                 final_image += output_numpy
-                with torch.cuda.device(args.device):
-                    torch.cuda.empty_cache()
+                # clear cache
+                # with torch.cuda.device(args.device):
+                #     torch.cuda.empty_cache()
             final_image = np.squeeze(np.uint8(np.clip(final_image / args.num_prediction, 0, 1) * 255))
             cv2.imwrite(model_path + 'Self2Self-' + str(step + 1) + '.png', final_image)
-            PSNR = skimage.metrics.peak_signal_noise_ratio(gt[0], final_image.astype(np.float32)/255.0)
+            PSNR = skimage.metrics.peak_signal_noise_ratio(np.squeeze(gt[0]), final_image.astype(np.float32)/255.0)
             print("psnr = ", PSNR)
             with open(args.log_pth, 'a') as f:
                 f.write("After %d training step(s), " % (step + 1))
@@ -94,12 +98,10 @@ def train(file_path, args, is_realnoisy=False):
                 f.write("psnr  is {:.4f}".format(PSNR))
                 f.write("\n")
             avg_loss = 0
-            model.train()
     
     return PSNR
     
 def main(args):
-    path = './testsets/Set9/'
     path = args.path
     file_list = os.listdir(path)
     with open(args.log_pth, 'w') as f:
@@ -111,7 +113,6 @@ def main(args):
             PSNR = train(path+file_name, args)
             avg_psnr += PSNR
             count += 1
-        break
     with open(args.log_pth, 'a') as f:
         f.write('average psnr is {:.4f}'.format(avg_psnr/count))
 
@@ -127,7 +128,7 @@ def build_args():
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--num_prediction", type=int, default=100)
     parser.add_argument("--log_pth", type=str, default='./logs/log.txt')
-    parser.add_argument("--path", type=str, default='./testsets/Set9/')
+    parser.add_argument("--path", type=str, default='./testsets/barbara/')
     parser.add_argument("--device", type=str, default='cpu')
     
     args = parser.parse_args()

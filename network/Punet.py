@@ -95,7 +95,7 @@ class Punet(nn.Module):
         self.dec_conv3b = conv_lr(96, 96)
         self.dec_conv2 = conv_lr(144, 96)
         self.dec_conv2b = conv_lr(96, 96)
-        self.dec_conv1a = conv_lr(99, 64)
+        self.dec_conv1a = conv_lr(96 + self.channel, 64)
         self.dec_conv1b = conv_lr(64, 32)
         self.dec_conv1 = conv(32, self.channel)
     
@@ -133,27 +133,27 @@ class Punet(nn.Module):
         return x, skips
     
     def decoder(self, x, skips):
-        x = F.upsample(x, scale_factor=2)
+        x = F.interpolate(x, scale_factor=2)
         x = torch.cat([x, skips.pop()], dim=1)
         x = self.dec_conv5(x, self.drop_rate)
         x = self.dec_conv5b(x, self.drop_rate)
         
-        x = F.upsample(x, scale_factor=2)
+        x = F.interpolate(x, scale_factor=2)
         x = torch.cat([x, skips.pop()], dim=1)
         x = self.dec_conv4(x, self.drop_rate)
         x = self.dec_conv4b(x, self.drop_rate)
         
-        x = F.upsample(x, scale_factor=2)
+        x = F.interpolate(x, scale_factor=2)
         x = torch.cat([x, skips.pop()], dim=1)
         x = self.dec_conv3(x, self.drop_rate)
         x = self.dec_conv3b(x, self.drop_rate)
         
-        x = F.upsample(x, scale_factor=2)
+        x = F.interpolate(x, scale_factor=2)
         x = torch.cat([x, skips.pop()], dim=1)
         x = self.dec_conv2(x, self.drop_rate)
         x = self.dec_conv2b(x, self.drop_rate)
         
-        x = F.upsample(x, scale_factor=2)
+        x = F.interpolate(x, scale_factor=2)
         x = torch.cat([x, skips.pop()], dim=1)
         x = self.dec_conv1a(x, self.drop_rate)
         x = self.dec_conv1b(x, self.drop_rate)
