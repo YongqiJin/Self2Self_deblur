@@ -3,7 +3,6 @@ import torch
 import torch.nn.functional as F
 import network.Punet
 import skimage.metrics
-import scipy
 from argparse import ArgumentParser
 from tqdm import tqdm
 

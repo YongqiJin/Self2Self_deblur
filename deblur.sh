@@ -8,5 +8,5 @@ python deblur.py \
     --lr 1e-4 \
     --test_frequency 1000 \
     --num_prediction 100 \
-    --log_path './logs/deblur/log_barbara.txt' \
+    --log_path './logs/deblur/log_barbara.txt' \ 
     --device 'cuda:0'

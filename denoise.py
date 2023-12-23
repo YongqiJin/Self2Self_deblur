@@ -133,7 +133,7 @@ def build_args():
     parser.add_argument("--drop_rate", type=float, default=0.3)
     parser.add_argument("--sigma", type=float, default=25.0)
     parser.add_argument("--bs", type=int, default=1)
-    parser.add_argument("--model_type", type=str, default='denoising')
+    parser.add_argument("--model_type", type=str, default='denoise')
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--num_prediction", type=int, default=100)
     parser.add_argument("--log_path", type=str, default='./logs/log.txt')
