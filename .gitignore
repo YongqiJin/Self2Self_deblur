@@ -1,3 +1,5 @@
 /logs/
+/testsets/
 
-*/pycache
+/__pycache__/
+/network/__pycache__/

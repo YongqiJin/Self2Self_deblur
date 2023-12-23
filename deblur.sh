@@ -1,11 +1,12 @@
-python main.py \
+python deblur.py \
     --path './testsets/barbara/' \
     --bs 1 \
+    --kernel_size 15 \
+    --kernel_sigma 1 \
     --sigma 25 \
     --iteration 150000 \
     --lr 1e-4 \
-    --model_type 'dropout' \
     --test_frequency 1000 \
     --num_prediction 100 \
-    --log_pth './logs/log_dropout.txt' \
+    --log_path './logs/deblur/log_barbara.txt' \
     --device 'cuda:0'

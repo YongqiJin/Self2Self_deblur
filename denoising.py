@@ -17,15 +17,15 @@ def data_arg(x, is_flip_lr, is_flip_ud):
         x = torch.flip(x, dims=[3])
     return x
 
-def get_output(noisy, model, drop_rate=0.3, bs=1, device='cpu'):
-    noisy_tensor = torch.tensor(noisy).permute(0,3,1,2).to(device)
+def get_output(processed, model, drop_rate=0.3, bs=1, device='cpu'):
+    processed_tensor = torch.tensor(processed).permute(0,3,1,2).to(device)
     is_flip_lr = np.random.randint(2)
     is_flip_ud = np.random.randint(2)
-    noisy_tensor = data_arg(noisy_tensor, is_flip_lr, is_flip_ud)
+    processed_tensor = data_arg(processed_tensor, is_flip_lr, is_flip_ud)
     # mask_tensor = torch.ones([bs, model.width, model.height]).to(device)
-    mask_tensor = torch.ones(noisy_tensor.shape).to(device)
+    mask_tensor = torch.ones(processed_tensor.shape).to(device)
     mask_tensor = F.dropout(mask_tensor, drop_rate) * (1-drop_rate)
-    input_tensor = noisy_tensor * mask_tensor#.unsqueeze(1)
+    input_tensor = processed_tensor * mask_tensor#.unsqueeze(1)
     output = model(input_tensor, mask_tensor)
     output = data_arg(output, is_flip_lr, is_flip_ud)
     output_numpy = output.detach().cpu().numpy().transpose(0,2,3,1)
@@ -45,15 +45,22 @@ def get_loss(noisy, model, drop_rate=0.3, bs=1, device='cpu'):
     loss = torch.sum((output-noisy_tensor).pow(2)*(observe_tensor)) / torch.count_nonzero(observe_tensor).float()
     return loss
 
-def train(file_path, args, is_realnoisy=False):
+def train(file_path, args):
     print(file_path)
     gt = util.load_np_image(file_path)
     _, w, h, c = gt.shape
-    model_path = file_path[0:file_path.rfind(".")] + "/" + str(args.sigma) + "/model_" + args.model_type + "/"
+    model_path = file_path[0:file_path.rfind(".")] + "/" + args.model_type + '/' + '_'.join([str(args.sigma), str(args.drop_rate)]) + "/"
     os.makedirs(model_path, exist_ok=True)
     noisy = util.add_gaussian_noise(gt, model_path, args.sigma, bs=args.bs)
     print('noisy shape:', noisy.shape)
     print('image shape:', gt.shape)
+        
+    # origin
+    PSNR = skimage.metrics.peak_signal_noise_ratio(np.squeeze(gt[0]), np.squeeze(noisy[0]))
+    print("Origin psnr = ", PSNR)
+    with open(args.log_path, 'a') as f:
+        f.write("File path: %s\n" % file_path)
+        f.write("Origin psnr  is {:.4f}\n".format(PSNR))
     
     # model
     model = network.Punet.Punet(channel=c, width=w, height=h, drop_rate=args.drop_rate).to(args.device)
@@ -92,7 +99,7 @@ def train(file_path, args, is_realnoisy=False):
             cv2.imwrite(model_path + 'Self2Self-' + str(step + 1) + '.png', final_image)
             PSNR = skimage.metrics.peak_signal_noise_ratio(np.squeeze(gt[0]), final_image.astype(np.float32)/255.0)
             print("psnr = ", PSNR)
-            with open(args.log_pth, 'a') as f:
+            with open(args.log_path, 'a') as f:
                 f.write("After %d training step(s), " % (step + 1))
                 f.write("loss  is {:.9f}, ".format(avg_loss / args.test_frequency)) 
                 f.write("psnr  is {:.4f}".format(PSNR))
@@ -104,7 +111,8 @@ def train(file_path, args, is_realnoisy=False):
 def main(args):
     path = args.path
     file_list = os.listdir(path)
-    with open(args.log_pth, 'w') as f:
+    os.makedirs(os.path.dirname(args.log_path), exist_ok=True)
+    with open(args.log_path, 'w') as f:
         f.write("Self2self algorithm!\n")
     avg_psnr = 0
     count = 0
@@ -113,8 +121,9 @@ def main(args):
             PSNR = train(path+file_name, args)
             avg_psnr += PSNR
             count += 1
-    with open(args.log_pth, 'a') as f:
+    with open(args.log_path, 'a') as f:
         f.write('average psnr is {:.4f}'.format(avg_psnr/count))
+    util.plot_log(args.log_path)
 
 def build_args():
     parser = ArgumentParser()
@@ -124,10 +133,10 @@ def build_args():
     parser.add_argument("--drop_rate", type=float, default=0.3)
     parser.add_argument("--sigma", type=float, default=25.0)
     parser.add_argument("--bs", type=int, default=1)
-    parser.add_argument("--model_type", type=str, default='dropout')
+    parser.add_argument("--model_type", type=str, default='denoising')
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--num_prediction", type=int, default=100)
-    parser.add_argument("--log_pth", type=str, default='./logs/log.txt')
+    parser.add_argument("--log_path", type=str, default='./logs/log.txt')
     parser.add_argument("--path", type=str, default='./testsets/barbara/')
     parser.add_argument("--device", type=str, default='cpu')
     
