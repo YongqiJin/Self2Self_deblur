@@ -1,15 +1,21 @@
 # Self2Self Pytorch Implementation
 
 ## Introduction
-This is a pytorch implementation of [Self2Self](https://openaccess.thecvf.com/content_CVPR_2020/papers/Quan_Self2Self_With_Dropout_Learning_Self-Supervised_Denoising_From_Single_Image_CVPR_2020_paper.pdf), "Yuhui Quan, Mingqin Chen, Tongyao Pang, Hui Ji; Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2020, pp. 1890-1898."
+This is a pytorch implementation of [Self2Self](https://openaccess.thecvf.com/content_CVPR_2020/papers/Quan_Self2Self_With_Dropout_Learning_Self-Supervised_denoise_From_Single_Image_CVPR_2020_paper.pdf), "Yuhui Quan, Mingqin Chen, Tongyao Pang, Hui Ji; Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2020, pp. 1890-1898."
 
 It is a pytorch reimplementation of the [tensorflow version](https://github.com/scut-mingqinchen/self2self). 
 
-You can simply run main.py with the default parameters:
+Self2Self is a self-supervised denoise method, which is trained on a single noisy image. In this project, we use the framework to deblur the image on a single noisy-blurred image.
+
+You can simply run `deblur.py` or `denoise.py` with the default parameters:
 ```
-sh main.sh
+sh deblur.sh
 ```
-The denoised images will be saved in images/, and the logs will be saved in logs/.
+or
+```
+sh denoise.sh
+```
+The deblurred / denoised images will be saved in images/, and the logs will be saved in logs/.
 
 ## Details of reimplementation
 
@@ -21,10 +27,17 @@ Pytorch has a package of the implementation of [Pconv2d](https://github.com/Desi
 ### Optimizer
 The implementation details of Adam between tensorflow and pytorch have slight difference. However, it is widely discussed the suboptimal convergence in PyTorch compared to TensorFlow when using Adam optimizer. 
 
-## Update Log
+## Update Log (Origin Repo)
 
 ### 2023-05-14 
 - Found and fixed a bug in line 144 of file "network/pconv.py", which enables our implementation to achieve comparable denosing performance with the tensorflow version. 
 - Found that changing the optimizer from Adam to AdamW achieves better denosing performance. (We still keep the Adam optimizer, in order to keep up with the original tensorflow version of the implementation)
 
 Thanks to @haimiaozh for all the contributions to improving this project! 
+
+## Update Log (YongqiJin)
+
+### 2023-12-23
+- Implement the deblurring version of Self2Self.
+
+Thanks to @yangpuPKU for providing a pytorch implementation of Self2Self!
