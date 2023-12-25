@@ -2,6 +2,7 @@ python denoise.py \
     --path './testsets/barbara/' \
     --bs 1 \
     --sigma 25 \
+    --drop_rate 0.3 \
     --iteration 150000 \
     --lr 1e-4 \
     --test_frequency 1000 \

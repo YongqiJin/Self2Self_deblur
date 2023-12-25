@@ -1,5 +1,6 @@
 /logs/
 /testsets/
+/images/
 
 /__pycache__/
 /network/__pycache__/

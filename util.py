@@ -103,6 +103,7 @@ def plot_log(path):
             losses.append(loss)
             psnr = float(line.split('psnr  is ')[1].split(',')[0])
             psnrs.append(psnr)
+    max_psnr = np.max(psnrs)
     # 绘制loss曲线
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
@@ -113,7 +114,7 @@ def plot_log(path):
     # 绘制psnr曲线
     plt.subplot(1, 2, 2)
     plt.plot(steps, psnrs)
-    plt.title('PSNR over time (Origin PSNR = %.4f)' % origin_psnr)
+    plt.title('PSNR over time (Origin: %.4f, Max: %.4f)' % (origin_psnr, max_psnr))
     plt.xlabel('Iteration (x1000)')
     plt.ylabel('PSNR')
     plt.tight_layout()

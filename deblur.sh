@@ -3,10 +3,11 @@ python deblur.py \
     --bs 1 \
     --kernel_size 15 \
     --kernel_sigma 1 \
-    --sigma 25 \
+    --sigma 10 \
+    --drop_rate 0.3 \
     --iteration 150000 \
     --lr 1e-4 \
     --test_frequency 1000 \
     --num_prediction 100 \
-    --log_path './logs/deblur/log_barbara.txt' \ 
+    --log_path './logs/deblur/log_barbara.txt' \
     --device 'cuda:0'

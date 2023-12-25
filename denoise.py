@@ -49,7 +49,7 @@ def train(file_path, args):
     print(file_path)
     gt = util.load_np_image(file_path)
     _, w, h, c = gt.shape
-    model_path = file_path[0:file_path.rfind(".")] + "/" + args.model_type + '/' + '_'.join([str(args.sigma), str(args.drop_rate)]) + "/"
+    model_path = "./images" + file_path[10:file_path.rfind(".")] + '/' + args.model_type + '/' + '_'.join([str(args.kernel_size), str(args.kernel_sigma), str(args.sigma), str(args.drop_rate)]) + "/"
     os.makedirs(model_path, exist_ok=True)
     noisy = util.add_gaussian_noise(gt, model_path, args.sigma, bs=args.bs)
     print('noisy shape:', noisy.shape)

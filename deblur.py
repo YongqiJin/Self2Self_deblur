@@ -43,7 +43,9 @@ def get_loss(noisy_blurred, kernel, model, drop_rate=0.3, bs=1, device='cpu'):
     output = model(input_tensor, mask_tensor)
     observe_tensor = 1.0 - mask_tensor#.unsqueeze(1)
     # convolve
-    blurred_output = util.convolve_torch(output, kernel.view(1, 1, *kernel.size()), mode='wrap')
+    blurred_output = util.convolve_torch(output, kernel.view(1, 1, *kernel.size()).to(device), mode='wrap')
+    if drop_rate == 0:
+        observe_tensor = torch.ones(observe_tensor.shape).to(device)
     loss = torch.sum((blurred_output-noisy_blurred_tensor).pow(2)*(observe_tensor)) / torch.count_nonzero(observe_tensor).float()
     return loss
 
@@ -51,7 +53,7 @@ def train(file_path, args):
     print(file_path)
     gt = util.load_np_image(file_path)
     _, w, h, c = gt.shape
-    model_path = file_path[0:file_path.rfind(".")] + '/' + args.model_type + '/' + '_'.join([str(args.kernel_size), str(args.kernel_sigma), str(args.sigma), str(args.drop_rate)]) + "/"
+    model_path = "./images" + file_path[10:file_path.rfind(".")] + '/' + args.model_type + '/' + '_'.join([str(args.kernel_size), str(args.kernel_sigma), str(args.sigma), str(args.drop_rate)]) + "/"
     os.makedirs(model_path, exist_ok=True)
     kernel = util.generate_kernel(args.kernel_size, 'guassian', args.kernel_sigma)
     blurred = util.blur(gt, model_path, kernel, bs=args.bs)
